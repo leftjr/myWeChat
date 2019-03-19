@@ -18,6 +18,45 @@ app.use(async (req, res, ) => {
             res.end("error");
             return;
         }
+        const shower = await new Promise((resolve, reject) => {
+            let inputdate = "";
+            req.on("data", data => {
+                inputdate += data.toString();
+            })
+                .on("end", () => {
+                    resolve(inputdate);
+                });
+        });
+
+        let jsdate = null;
+        parseString(shower, { trim: true }, (err, result) => {
+            jsdate = result;
+        });
+        const { xml } = jsdate;
+        let userdate = {}
+        for (var key in xml) {
+            userdate[key] = xml[key][0];
+        }
+        // console.log(userdate);
+        let resdate = "你说啥子列,听不懂啊";
+        if (userdate.Content === "1") {
+            resdate = "大吉大利\n今晚吃鸡";
+        } else if (userdate.Content === "2") {
+            resdate = "apex英雄\n你值得拥有";
+        } else if (userdate.Content && userdate.Content.indexOf("3") !== -1) {
+            resdate = "兽人永不为奴\n为了部落";
+        } else if (userdate.Content && userdate.Content.indexOf("4") !== -1) {
+            resdate = "还玩儿,还玩儿\n让你玩儿= =";
+        }
+
+        const resUltimaDate = `<xml>
+        <ToUserName><![CDATA[${userdate.FromUserName}]]></ToUserName>
+        <FromUserName><![CDATA[${userdate.ToUserName}]]></FromUserName>
+        <CreateTime>${Date.now()}</CreateTime>
+        <MsgType><![CDATA[text]]></MsgType>
+        <Content><![CDATA[${resdate}]]></Content>
+        </xml>`;
+        res.send(resUltimaDate);
     }else{
         res.send("error");
     }
