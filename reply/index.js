@@ -1,5 +1,6 @@
 const sha1 = require("sha1");
 const {getinputdate,shiftJsDate,formatting} = require("../utils/tool");
+const template = require("./template");
 module.exports = ()=>{
     return async (req, res, ) => {
         const { signature, timestamp, nonce, echostr } = req.query;
@@ -24,26 +25,30 @@ module.exports = ()=>{
 
             const userdate = formatting(jsdate);
 
-            // console.log(userdate);
-            let resdate = "你说啥子列,听不懂啊";
-            if (userdate.Content === "1") {
-                resdate = "大吉大利\n今晚吃鸡";
-            } else if (userdate.Content === "2") {
-                resdate = "apex英雄\n你值得拥有";
-            } else if (userdate.Content && userdate.Content.indexOf("3") !== -1) {
-                resdate = "兽人永不为奴\n为了部落";
-            } else if (userdate.Content && userdate.Content.indexOf("4") !== -1) {
-                resdate = "还玩儿,还玩儿\n让你玩儿= =";
+            const deploy = {
+                toUserName:userdate.FromUserName,
+                fromUserName:userdate.ToUserName,
+                content:"你说啥子列,听不懂啊"
+            };
+
+            if (userdate.MsgType === "text" && userdate.Content === "1") {
+                deploy.type = userdate.MsgType;
+                deploy.content = "大吉大利\n今晚吃鸡";
+            } else if (userdate.MsgType === "text" && userdate.Content === "2") {
+                deploy.type = userdate.MsgType;
+                deploy.content = "apex英雄\n你值得拥有";
+            } else if (userdate.MsgType === "text" && userdate.Content.indexOf("3") !== -1) {
+                deploy.type = userdate.MsgType;
+                deploy.content = "兽人永不为奴\n为了部落";
+            } else if (userdate.MsgType === "text" && userdate.Content.indexOf("4") !== -1) {
+                deploy.type = userdate.MsgType;
+                deploy.content = "还玩儿,还玩儿\n让你玩儿= =";
+            } else if(userdate.MsgType === "image"){
+                deploy.type = userdate.MsgType;
+                deploy.mediaId = userdate.MediaId;
             }
-    
-            const resUltimaDate = `<xml>
-            <ToUserName><![CDATA[${userdate.FromUserName}]]></ToUserName>
-            <FromUserName><![CDATA[${userdate.ToUserName}]]></FromUserName>
-            <CreateTime>${Date.now()}</CreateTime>
-            <MsgType><![CDATA[text]]></MsgType>
-            <Content><![CDATA[${resdate}]]></Content>
-            </xml>`;
             
+            const resUltimaDate = template(deploy);
             res.send(resUltimaDate);
 
         }else{
